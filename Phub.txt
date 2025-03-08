@@ -1,60 +1,79 @@
+-- Original script from pastebin (for Tracers)
+local function enableTracers()
+    print("Enabling Tracers...")
+    _G.tracersEnabled = true
+    if not loadedScriptTracers then
+        loadedScriptTracers = loadstring(game:HttpGet("https://pastebin.com/raw/nXSwL3WD", true))
+        loadedScriptTracers()
+    end
+end
+
+local function disableTracers()
+    print("Disabling Tracers...")
+    _G.tracersEnabled = false
+    loadedScriptTracers = nil
+end
+
+-- Global variable for Tracers script
+local loadedScriptTracers = nil
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- 1) New Loadstring URLs
+-- 1) New Loadstring URLs for other scripts
 local script1URL = "https://raw.githubusercontent.com/policeCOKE1-alt/4/refs/heads/main/BallPredictorscript%20-%20Copy.txt"
 local script2URL = "https://raw.githubusercontent.com/policeCOKE1-alt/5/refs/heads/main/InfStamScript%20-%20Copy.txt"
 local script3URL = "https://raw.githubusercontent.com/policeCOKE1-alt/6/refs/heads/main/BallPredicotorScript2%20-%20Copy.txt"
 
--- 2) Functions to load/unload scripts
+-- 2) Functions to load/unload scripts for other functionalities
 local loadedScript1, loadedScript2, loadedScript3 = nil, nil, nil
 
 local function enableScript1()
-print("Enabling Ball Predictor 1...")
-_G.script1Enabled = true
-if not loadedScript1 then
-loadedScript1 = loadstring(game:HttpGet(script1URL, true))
-loadedScript1()
-end
+    print("Enabling Ball Predictor 1...")
+    _G.script1Enabled = true
+    if not loadedScript1 then
+        loadedScript1 = loadstring(game:HttpGet(script1URL, true))
+        loadedScript1()
+    end
 end
 
 local function disableScript1()
-print("Disabling Ball Predictor 1...")
-_G.script1Enabled = false
-loadedScript1 = nil
+    print("Disabling Ball Predictor 1...")
+    _G.script1Enabled = false
+    loadedScript1 = nil
 end
 
 local function enableScript2()
-print("Enabling Inf stam...")
-_G.script2Enabled = true
-if not loadedScript2 then
-loadedScript2 = loadstring(game:HttpGet(script2URL, true))
-loadedScript2()
-end
+    print("Enabling Inf stam...")
+    _G.script2Enabled = true
+    if not loadedScript2 then
+        loadedScript2 = loadstring(game:HttpGet(script2URL, true))
+        loadedScript2()
+    end
 end
 
 local function disableScript2()
-print("Disabling Inf stam...")
-_G.script2Enabled = false
-loadedScript2 = nil
+    print("Disabling Inf stam...")
+    _G.script2Enabled = false
+    loadedScript2 = nil
 end
 
 local function enableScript3()
-print("Enabling Ball Predictor 2...")
-_G.script3Enabled = true
-if not loadedScript3 then
-loadedScript3 = loadstring(game:HttpGet(script3URL, true))
-loadedScript3()
-end
+    print("Enabling Ball Predictor 2...")
+    _G.script3Enabled = true
+    if not loadedScript3 then
+        loadedScript3 = loadstring(game:HttpGet(script3URL, true))
+        loadedScript3()
+    end
 end
 
 local function disableScript3()
-print("Disabling Ball Predictor 2...")
-_G.script3Enabled = false
-loadedScript3 = nil
+    print("Disabling Ball Predictor 2...")
+    _G.script3Enabled = false
+    loadedScript3 = nil
 end
 
 -- 3) Build the GUI
@@ -140,192 +159,200 @@ destructBtn.Parent = mainFrame
 
 -- Visibility update function
 local function updateVisibility(isMinimized)
-if isMinimized then
-sidebar.Visible = false
-contentFrame.Visible = false
-destructBtn.Visible = false
-titleLabel.Visible = false
-else
-sidebar.Visible = true
-contentFrame.Visible = true
-destructBtn.Visible = true
-titleLabel.Visible = true
-end
+    if isMinimized then
+        sidebar.Visible = false
+        contentFrame.Visible = false
+        destructBtn.Visible = false
+        titleLabel.Visible = false
+    else
+        sidebar.Visible = true
+        contentFrame.Visible = true
+        destructBtn.Visible = true
+        titleLabel.Visible = true
+    end
 end
 
 local minimized = false
 updateVisibility(minimized)
 
 minimizeButton.MouseButton1Click:Connect(function()
-if not minimized then
-minimized = true
-mainFrame.Size = UDim2.new(0, 40, 0, 40)
-minimizeButton.Text = "+"
-updateVisibility(minimized)
-else
-minimized = false
-mainFrame.Size = originalSize
-minimizeButton.Text = "-"
-updateVisibility(minimized)
-end
+    if not minimized then
+        minimized = true
+        mainFrame.Size = UDim2.new(0, 40, 0, 40)
+        minimizeButton.Text = "+"
+        updateVisibility(minimized)
+    else
+        minimized = false
+        mainFrame.Size = originalSize
+        minimizeButton.Text = "-"
+        updateVisibility(minimized)
+    end
 end)
 
 -- Dragging functionality
 local dragging = false
 local dragInput, dragStart, startPos
 topBar.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = true
-dragStart = input.Position
-startPos = mainFrame.Position
-input.Changed:Connect(function()
-if input.UserInputState == Enum.UserInputState.End then
-dragging = false
-end
-end)
-end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 topBar.InputChanged:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseMovement then
-dragInput = input
-end
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
 end)
 UserInputService.InputChanged:Connect(function(input)
-if input == dragInput and dragging then
-local delta = input.Position - dragStart
-mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 end)
 
 -- 4) Scripts Sidebar and Content
 local function clearContent()
-for _, child in pairs(contentFrame:GetChildren()) do
-if child:IsA("GuiObject") then
-child:Destroy()
-end
-end
+    for _, child in pairs(contentFrame:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
+        end
+    end
 end
 
 local scripts = {
-{
-Name = "Ball Predictor 1",
-Enabled = false,
-EnableFunc = enableScript1,
-DisableFunc = disableScript1
-},
-{
-Name = "Inf stam",
-Enabled = false,
-EnableFunc = enableScript2,
-DisableFunc = disableScript2
-},
-{
-Name = "Ball Predictor 2",
-Enabled = false,
-EnableFunc = enableScript3,
-DisableFunc = disableScript3
-}
+    {
+        Name = "Ball Predictor 1",
+        Enabled = false,
+        EnableFunc = enableScript1,
+        DisableFunc = disableScript1
+    },
+    {
+        Name = "Inf stam",
+        Enabled = false,
+        EnableFunc = enableScript2,
+        DisableFunc = disableScript2
+    },
+    {
+        Name = "Ball Predictor 2",
+        Enabled = false,
+        EnableFunc = enableScript3,
+        DisableFunc = disableScript3
+    },
+    {
+        Name = "Tracers",
+        Enabled = false,
+        EnableFunc = enableTracers,
+        DisableFunc = disableTracers
+    }
 }
 
 for i, scriptData in ipairs(scripts) do
-local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(1, 0, 0, 50)
-btn.Position = UDim2.new(0, 0, 0, (i - 1) * 55)
-btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-btn.BackgroundTransparency = 0.3
-btn.BorderSizePixel = 0
-btn.Text = scriptData.Name
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.Font = Enum.Font.SourceSansBold
-btn.TextScaled = false
-btn.TextSize = 14
-btn.TextWrapped = true
-btn.Parent = sidebar
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 50)
+    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 55)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.BackgroundTransparency = 0.3
+    btn.BorderSizePixel = 0
+    btn.Text = scriptData.Name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextScaled = false
+    btn.TextSize = 14
+    btn.TextWrapped = true
+    btn.Parent = sidebar
 
-btn.MouseButton1Click:Connect(function()
-clearContent()
+    btn.MouseButton1Click:Connect(function()
+        clearContent()
 
-local lbl = Instance.new("TextLabel")
-lbl.Size = UDim2.new(1, 0, 0, 40)
-lbl.BackgroundTransparency = 1
-lbl.Text = scriptData.Name
-lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-lbl.Font = Enum.Font.SourceSansBold
-lbl.TextScaled = false
-lbl.TextSize = 14
-lbl.TextWrapped = true
-lbl.Parent = contentFrame
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(1, 0, 0, 40)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = scriptData.Name
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.Font = Enum.Font.SourceSansBold
+        lbl.TextScaled = false
+        lbl.TextSize = 14
+        lbl.TextWrapped = true
+        lbl.Parent = contentFrame
 
-local onBtn = Instance.new("TextButton")
-onBtn.Size = UDim2.new(0, 80, 0, 40)
-onBtn.Position = UDim2.new(0, 10, 0, 50)
-onBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
-onBtn.Text = "On"
-onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-onBtn.Font = Enum.Font.SourceSansBold
-onBtn.TextScaled = false
-onBtn.TextSize = 14
-onBtn.Parent = contentFrame
+        local onBtn = Instance.new("TextButton")
+        onBtn.Size = UDim2.new(0, 80, 0, 40)
+        onBtn.Position = UDim2.new(0, 10, 0, 50)
+        onBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+        onBtn.Text = "On"
+        onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        onBtn.Font = Enum.Font.SourceSansBold
+        onBtn.TextScaled = false
+        onBtn.TextSize = 14
+        onBtn.Parent = contentFrame
 
-local offBtn = Instance.new("TextButton")
-offBtn.Size = UDim2.new(0, 80, 0, 40)
-offBtn.Position = UDim2.new(0, 100, 0, 50)
-offBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-offBtn.Text = "Off"
-offBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-offBtn.Font = Enum.Font.SourceSansBold
-offBtn.TextScaled = false
-offBtn.TextSize = 14
-offBtn.Parent = contentFrame
+        local offBtn = Instance.new("TextButton")
+        offBtn.Size = UDim2.new(0, 80, 0, 40)
+        offBtn.Position = UDim2.new(0, 100, 0, 50)
+        offBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+        offBtn.Text = "Off"
+        offBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        offBtn.Font = Enum.Font.SourceSansBold
+        offBtn.TextScaled = false
+        offBtn.TextSize = 14
+        offBtn.Parent = contentFrame
 
-onBtn.MouseButton1Click:Connect(function()
-if not scriptData.Enabled then
-scriptData.EnableFunc()
-scriptData.Enabled = true
-print(scriptData.Name .. " is now Enabled")
-end
-end)
-offBtn.MouseButton1Click:Connect(function()
-if scriptData.Enabled then
-scriptData.DisableFunc()
-scriptData.Enabled = false
-print(scriptData.Name .. " is now Disabled")
-end
-end)
-end)
+        onBtn.MouseButton1Click:Connect(function()
+            if not scriptData.Enabled then
+                scriptData.EnableFunc()
+                scriptData.Enabled = true
+                print(scriptData.Name .. " is now Enabled")
+            end
+        end)
+        offBtn.MouseButton1Click:Connect(function()
+            if scriptData.Enabled then
+                scriptData.DisableFunc()
+                scriptData.Enabled = false
+                print(scriptData.Name .. " is now Disabled")
+            end
+        end)
+    end)
 end
 
 if sidebar:FindFirstChildWhichIsA("TextButton") then
-sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
+    sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
 end
 
 -- 5) Self-Destruct Button
 destructBtn.MouseButton1Click:Connect(function()
-print("Self-Destruct Initiated...")
-_G.script1Enabled = false
-_G.script2Enabled = false
-_G.script3Enabled = false
-loadedScript1 = nil
-loadedScript2 = nil
-loadedScript3 = nil
-screenGui:Destroy()
-print("GUI and scripts have been destroyed!")
+    print("Self-Destruct Initiated...")
+    _G.script1Enabled = false
+    _G.script2Enabled = false
+    _G.script3Enabled = false
+    _G.tracersEnabled = false
+    loadedScript1 = nil
+    loadedScript2 = nil
+    loadedScript3 = nil
+    loadedScriptTracers = nil
+    screenGui:Destroy()
+    print("GUI and scripts have been destroyed!")
 end)
 
 -- 6) Keybind: Shift + P to toggle mainFrame visibility
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-if gameProcessed then return end
-if input.KeyCode == Enum.KeyCode.P and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-if minimized then
-minimized = false
-mainFrame.Size = originalSize
-minimizeButton.Text = "-"
-updateVisibility(minimized)
-else
-minimized = true
-mainFrame.Size = UDim2.new(0, 40, 0, 40)
-minimizeButton.Text = "+"
-updateVisibility(minimized)
-end
-end
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.P and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+        if minimized then
+            minimized = false
+            mainFrame.Size = originalSize
+            minimizeButton.Text = "-"
+            updateVisibility(minimized)
+        else
+            minimized = true
+            mainFrame.Size = UDim2.new(0, 40, 0, 40)
+            minimizeButton.Text = "+"
+            updateVisibility(minimized)
+        end
+    end
 end)

@@ -346,7 +346,8 @@ local scripts = {
 
 for i, scriptData in ipairs(scripts) do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 50)
+    -- Making the sidebar buttons a little smaller (height reduced to 40)
+    btn.Size = UDim2.new(1, -10, 0, 40)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     btn.BackgroundTransparency = 0.3
     btn.BorderSizePixel = 0
@@ -354,7 +355,8 @@ for i, scriptData in ipairs(scripts) do
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.SourceSansBold
     btn.TextScaled = false
-    btn.TextSize = 14
+    -- Reduced text size for sidebar buttons
+    btn.TextSize = 12
     btn.TextWrapped = true
     btn.Parent = sidebar
 
@@ -380,7 +382,7 @@ for i, scriptData in ipairs(scripts) do
             warnLbl.Position = UDim2.new(0, 0, 0, currentOffset)
             warnLbl.BackgroundTransparency = 1
             warnLbl.Text = scriptData.Warning
-            warnLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
+            warnLbl.TextColor3 = Color3.new(0.607843, 0.058824, 0.058824)
             warnLbl.Font = Enum.Font.SourceSansBold
             warnLbl.TextScaled = false
             warnLbl.TextSize = 12
@@ -391,26 +393,31 @@ for i, scriptData in ipairs(scripts) do
             currentOffset = currentOffset + 10
         end
 
+                -- On/Off buttons moved further to the right and styled to remove the blue outline.
         local onBtn = Instance.new("TextButton")
         onBtn.Size = UDim2.new(0, 80, 0, 40)
-        onBtn.Position = UDim2.new(0, 10, 0, currentOffset)
-        onBtn.BackgroundColor3 = Color3.new(0, 120/255, 0)
+        onBtn.Position = UDim2.new(0, 40, 0, currentOffset)  -- increased X offset
+        onBtn.BackgroundColor3 = Color3.new(0.086275, 0.086275, 0.086275)  -- black background
         onBtn.Text = "On"
-        onBtn.TextColor3 = Color3.new(1, 1, 1)
+        onBtn.TextColor3 = Color3.new(1, 1, 1)  -- white text
         onBtn.Font = Enum.Font.SourceSansBold
         onBtn.TextScaled = false
         onBtn.TextSize = 14
+        onBtn.AutoButtonColor = false  -- disable default blue highlight
+        onBtn.BorderSizePixel = 0       -- remove border
         onBtn.Parent = contentFrame
 
         local offBtn = Instance.new("TextButton")
         offBtn.Size = UDim2.new(0, 80, 0, 40)
-        offBtn.Position = UDim2.new(0, 100, 0, currentOffset)
-        offBtn.BackgroundColor3 = Color3.new(120/255, 0, 0)
+        offBtn.Position = UDim2.new(0, 130, 0, currentOffset)  -- adjusted further to the right
+        offBtn.BackgroundColor3 = Color3.new(0.086275, 0.086275, 0.086275)  -- black background
         offBtn.Text = "Off"
-        offBtn.TextColor3 = Color3.new(1, 1, 1)
+        offBtn.TextColor3 = Color3.new(1, 1, 1)  -- white text
         offBtn.Font = Enum.Font.SourceSansBold
         offBtn.TextScaled = false
         offBtn.TextSize = 14
+        offBtn.AutoButtonColor = false  -- disable default blue highlight
+        offBtn.BorderSizePixel = 0       -- remove border
         offBtn.Parent = contentFrame
 
         onBtn.MouseButton1Click:Connect(function()

@@ -1,96 +1,165 @@
--- Original script with modifications for Map Deleter and scrollable sidebar
+----------------------------------------------------
+-- Global Function Definitions (with stop methods)
+----------------------------------------------------
+-- (Ensure these URLs point to your updated remote scripts)
+local script1URL = "https://raw.githubusercontent.com/policeCOKE1-alt/4/refs/heads/main/BallPredictorscript%20-%20Copy.txt"
+local script2URL = "https://raw.githubusercontent.com/policeCOKE1-alt/5/refs/heads/main/InfStamScript%20-%20Copy.txt"
+local script3URL = "https://raw.githubusercontent.com/policeCOKE1-alt/6/refs/heads/main/BallPredicotorScript2%20-%20Copy.txt"
+local tracersURL = "https://raw.githubusercontent.com/policeCOKE1-alt/8/refs/heads/main/Tracers.txt"
+local mapDeleterURL = "https://raw.githubusercontent.com/policeCOKE1-alt/7/refs/heads/main/MapDeleter.txt"
 
-local function enableTracers()
-    print("Enabling Tracers...")
+-- Global references to loaded scripts (returned tables)
+_G.loadedScript1 = nil
+_G.loadedScript2 = nil
+_G.loadedScript3 = nil
+_G.loadedScriptTracers = nil
+
+-- Ball Predictor 1
+_G.BallPredictor1On = function()
+    print("[DEBUG] Enabling Ball Predictor 1...")
+    _G.script1Enabled = true
+    if not _G.loadedScript1 then
+        local success, predictor = pcall(function() return loadstring(game:HttpGet(script1URL, true))() end)
+        if success and predictor then
+            _G.loadedScript1 = predictor
+        else
+            warn("[ERROR] Failed to load Ball Predictor 1 script.")
+        end
+    end
+end
+_G.BallPredictor1Off = function()
+    print("[DEBUG] Disabling Ball Predictor 1...")
+    _G.script1Enabled = false
+    if _G.loadedScript1 and _G.loadedScript1.stop then
+        pcall(function()
+            print("[DEBUG] Calling Ball Predictor 1 stop method...")
+            _G.loadedScript1.stop()
+            print("[DEBUG] Ball Predictor 1 stop method called successfully.")
+        end)
+    else
+        print("[WARN] No stop method available for Ball Predictor 1.")
+    end
+    _G.loadedScript1 = nil
+end
+
+-- Inf Stam
+_G.InfStamOn = function()
+    print("[DEBUG] Enabling Inf Stam...")
+    _G.InfStamEnabled = true
+    if not _G.loadedScript2 then
+        local success, stam = pcall(function() return loadstring(game:HttpGet(script2URL, true))() end)
+        if success and stam then
+            _G.loadedScript2 = stam
+        else
+            warn("[ERROR] Failed to load Inf Stam script.")
+        end
+    end
+end
+_G.InfStamOff = function()
+    print("[DEBUG] Disabling Inf Stam...")
+    _G.InfStamEnabled = false
+    if _G.loadedScript2 and _G.loadedScript2.stop then
+        pcall(function()
+            print("[DEBUG] Calling Inf Stam stop method...")
+            _G.loadedScript2.stop()
+            print("[DEBUG] Inf Stam stop method called successfully.")
+        end)
+    else
+        print("[WARN] No stop method available for Inf Stam.")
+    end
+    _G.loadedScript2 = nil
+end
+
+-- Ball Predictor 2
+_G.BallPredictor2On = function()
+    print("[DEBUG] Enabling Ball Predictor 2...")
+    _G.BallPredictor2Enabled = true
+    if not _G.loadedScript3 then
+        local success, predictor2 = pcall(function() return loadstring(game:HttpGet(script3URL, true))() end)
+        if success and predictor2 then
+            _G.loadedScript3 = predictor2
+        else
+            warn("[ERROR] Failed to load Ball Predictor 2 script.")
+        end
+    end
+end
+_G.BallPredictor2Off = function()
+    print("[DEBUG] Disabling Ball Predictor 2...")
+    _G.BallPredictor2Enabled = false
+    if _G.loadedScript3 and _G.loadedScript3.stop then
+        pcall(function()
+            print("[DEBUG] Calling Ball Predictor 2 stop method...")
+            _G.loadedScript3.stop()
+            print("[DEBUG] Ball Predictor 2 stop method called successfully.")
+        end)
+    else
+        print("[WARN] No stop method available for Ball Predictor 2.")
+    end
+    _G.loadedScript3 = nil
+end
+
+-- Tracers
+_G.TracersOn = function()
+    print("[DEBUG] Enabling Tracers...")
     _G.tracersEnabled = true
-    if not loadedScriptTracers then
-        loadedScriptTracers = loadstring(game:HttpGet("https://pastebin.com/raw/nXSwL3WD", true))
-        loadedScriptTracers()
+    if not _G.loadedScriptTracers then
+        local success, tracers = pcall(function() return loadstring(game:HttpGet(tracersURL, true))() end)
+        if success and tracers then
+            _G.loadedScriptTracers = tracers
+        else
+            warn("[ERROR] Failed to load Tracers script.")
+        end
+    end
+end
+_G.TracersOff = function()
+    print("[DEBUG] Disabling Tracers...")
+    _G.tracersEnabled = false
+    if _G.loadedScriptTracers and _G.loadedScriptTracers.stop then
+        pcall(function()
+            print("[DEBUG] Calling Tracers stop method...")
+            _G.loadedScriptTracers.stop()
+            print("[DEBUG] Tracers stop method called successfully.")
+        end)
+    else
+        print("[WARN] No stop method available for Tracers.")
+    end
+    _G.loadedScriptTracers = nil
+end
+
+-- Map Deleter
+_G.MapDeleterOn = function()
+    print("[DEBUG] Enabling Map Deleter...")
+    _G.mapDeleterEnabled = true
+    local success = pcall(function() loadstring(game:HttpGet(mapDeleterURL, true))() end)
+    if not success then
+        warn("[ERROR] Failed to load Map Deleter script.")
+    end
+end
+_G.MapDeleterOff = function()
+    print("[DEBUG] Disabling Map Deleter...")
+    _G.mapDeleterEnabled = false
+    if _G.MapOff then
+        pcall(function()
+            print("[DEBUG] Calling MapDeleter stop method (_G.MapOff)...")
+            _G.MapOff()
+            print("[DEBUG] MapDeleter stop method (_G.MapOff) called successfully.")
+        end)
+    else
+        print("[WARN] _G.MapOff is not defined; cannot restore the map automatically.")
     end
 end
 
-local function disableTracers()
-    print("Disabling Tracers...")
-    _G.tracersEnabled = false
-    loadedScriptTracers = nil
-end
-
--- Global variable for Tracers script
-local loadedScriptTracers = nil
-
+----------------------------------------------------
+-- GUI Code
+----------------------------------------------------
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- 1) New Loadstring URLs for other scripts
-local script1URL = "https://raw.githubusercontent.com/policeCOKE1-alt/4/refs/heads/main/BallPredictorscript%20-%20Copy.txt"
-local script2URL = "https://raw.githubusercontent.com/policeCOKE1-alt/5/refs/heads/main/InfStamScript%20-%20Copy.txt"
-local script3URL = "https://raw.githubusercontent.com/policeCOKE1-alt/6/refs/heads/main/BallPredicotorScript2%20-%20Copy.txt"
+print("[DEBUG] Creating GUI...")
 
--- 2) Functions to load/unload scripts for other functionalities
-local loadedScript1, loadedScript2, loadedScript3 = nil, nil, nil
-
-local function enableScript1()
-    print("Enabling Ball Predictor 1...")
-    _G.script1Enabled = true
-    if not loadedScript1 then
-        loadedScript1 = loadstring(game:HttpGet(script1URL, true))
-        loadedScript1()
-    end
-end
-
-local function disableScript1()
-    print("Disabling Ball Predictor 1...")
-    _G.script1Enabled = false
-    loadedScript1 = nil
-end
-
-local function enableScript2()
-    print("Enabling Inf stam...")
-    _G.script2Enabled = true
-    if not loadedScript2 then
-        loadedScript2 = loadstring(game:HttpGet(script2URL, true))
-        loadedScript2()
-    end
-end
-
-local function disableScript2()
-    print("Disabling Inf stam...")
-    _G.script2Enabled = false
-    loadedScript2 = nil
-end
-
-local function enableScript3()
-    print("Enabling Ball Predictor 2...")
-    _G.script3Enabled = true
-    if not loadedScript3 then
-        loadedScript3 = loadstring(game:HttpGet(script3URL, true))
-        loadedScript3()
-    end
-end
-
-local function disableScript3()
-    print("Disabling Ball Predictor 2...")
-    _G.script3Enabled = false
-    loadedScript3 = nil
-end
-
--- Map Deleter functions
-local function enableMapDeleter()
-    print("Enabling Map Deleter...")
-    _G.mapDeleterEnabled = true
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/policeCOKE1-alt/7/refs/heads/main/MapDeleter.txt", true))()
-end
-
-local function disableMapDeleter()
-    print("Disabling Map Deleter...")
-    _G.mapDeleterEnabled = false
-    _G.MapOff()  -- Map restoration command
-end
-
--- 3) Build the GUI
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MySploitGui"
@@ -105,7 +174,7 @@ mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
-local originalSize = mainFrame.Size -- store original size for restore
+local originalSize = mainFrame.Size
 
 -- Top Bar (draggable)
 local topBar = Instance.new("Frame")
@@ -139,7 +208,7 @@ minimizeButton.TextScaled = false
 minimizeButton.TextSize = 12
 minimizeButton.Parent = topBar
 
--- Sidebar (for script buttons) as a scrolling frame
+-- Sidebar (scrollable frame for script buttons)
 local sidebar = Instance.new("ScrollingFrame")
 sidebar.Name = "Sidebar"
 sidebar.Size = UDim2.new(0, 140, 1, -30)
@@ -147,7 +216,7 @@ sidebar.Position = UDim2.new(0, 0, 0, 30)
 sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 sidebar.BackgroundTransparency = 0.3
 sidebar.BorderSizePixel = 0
-sidebar.CanvasSize = UDim2.new(0, 0, 0, 55 * 5) -- Adjust height based on number of buttons (here 5 scripts)
+sidebar.CanvasSize = UDim2.new(0, 0, 0, 55 * 5)
 sidebar.ScrollBarThickness = 5
 sidebar.Parent = mainFrame
 
@@ -178,19 +247,11 @@ destructBtn.TextScaled = false
 destructBtn.TextSize = 12
 destructBtn.Parent = mainFrame
 
--- Visibility update function
 local function updateVisibility(isMinimized)
-    if isMinimized then
-        sidebar.Visible = false
-        contentFrame.Visible = false
-        destructBtn.Visible = false
-        titleLabel.Visible = false
-    else
-        sidebar.Visible = true
-        contentFrame.Visible = true
-        destructBtn.Visible = true
-        titleLabel.Visible = true
-    end
+    sidebar.Visible = not isMinimized
+    contentFrame.Visible = not isMinimized
+    destructBtn.Visible = not isMinimized
+    titleLabel.Visible = not isMinimized
 end
 
 local minimized = false
@@ -210,7 +271,7 @@ minimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Dragging functionality
+-- Dragging functionality for the GUI
 local dragging = false
 local dragInput, dragStart, startPos
 topBar.InputBegan:Connect(function(input)
@@ -237,7 +298,9 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- 4) Scripts Sidebar and Content
+----------------------------------------------------
+-- Scripts Sidebar and Content (On/Off Buttons)
+----------------------------------------------------
 local function clearContent()
     for _, child in pairs(contentFrame:GetChildren()) do
         if child:IsA("GuiObject") then
@@ -246,42 +309,41 @@ local function clearContent()
     end
 end
 
--- Scripts table with the new Map Deleter entry added
+-- Updated scripts table using our new global functions
 local scripts = {
     {
         Name = "Ball Predictor 1",
         Enabled = false,
-        EnableFunc = enableScript1,
-        DisableFunc = disableScript1
+        GlobalOn = _G.BallPredictor1On,
+        GlobalOff = _G.BallPredictor1Off,
     },
     {
         Name = "Inf stam",
         Enabled = false,
-        EnableFunc = enableScript2,
-        DisableFunc = disableScript2
+        GlobalOn = _G.InfStamOn,
+        GlobalOff = _G.InfStamOff,
     },
     {
         Name = "Ball Predictor 2",
         Enabled = false,
-        EnableFunc = enableScript3,
-        DisableFunc = disableScript3
+        GlobalOn = _G.BallPredictor2On,
+        GlobalOff = _G.BallPredictor2Off,
     },
     {
         Name = "Tracers",
         Enabled = false,
-        EnableFunc = enableTracers,
-        DisableFunc = disableTracers
+        GlobalOn = _G.TracersOn,
+        GlobalOff = _G.TracersOff,
     },
     {
         Name = "Map Deleter",
         Enabled = false,
-        EnableFunc = enableMapDeleter,
-        DisableFunc = disableMapDeleter,
+        GlobalOn = _G.MapDeleterOn,
+        GlobalOff = _G.MapDeleterOff,
         Warning = "Only turn this on when on a court"
     }
 }
 
--- Create a button for each script and parent to the scrollable sidebar
 for i, scriptData in ipairs(scripts) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 50)
@@ -299,7 +361,6 @@ for i, scriptData in ipairs(scripts) do
     btn.MouseButton1Click:Connect(function()
         clearContent()
 
-        -- Title label for the selected script
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.new(1, 0, 0, 40)
         lbl.BackgroundTransparency = 1
@@ -313,43 +374,40 @@ for i, scriptData in ipairs(scripts) do
 
         local currentOffset = 40
 
-        -- If there's a warning message, place it directly below the title
         if scriptData.Warning then
             local warnLbl = Instance.new("TextLabel")
             warnLbl.Size = UDim2.new(1, 0, 0, 20)
             warnLbl.Position = UDim2.new(0, 0, 0, currentOffset)
             warnLbl.BackgroundTransparency = 1
             warnLbl.Text = scriptData.Warning
-            warnLbl.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Yellow color
+            warnLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
             warnLbl.Font = Enum.Font.SourceSansBold
             warnLbl.TextScaled = false
             warnLbl.TextSize = 12
             warnLbl.TextWrapped = true
             warnLbl.Parent = contentFrame
-            currentOffset = currentOffset + 30  -- Adjust offset for buttons
+            currentOffset = currentOffset + 30
         else
             currentOffset = currentOffset + 10
         end
 
-        -- On button
         local onBtn = Instance.new("TextButton")
         onBtn.Size = UDim2.new(0, 80, 0, 40)
         onBtn.Position = UDim2.new(0, 10, 0, currentOffset)
-        onBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+        onBtn.BackgroundColor3 = Color3.new(0, 120/255, 0)
         onBtn.Text = "On"
-        onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        onBtn.TextColor3 = Color3.new(1, 1, 1)
         onBtn.Font = Enum.Font.SourceSansBold
         onBtn.TextScaled = false
         onBtn.TextSize = 14
         onBtn.Parent = contentFrame
 
-        -- Off button
         local offBtn = Instance.new("TextButton")
         offBtn.Size = UDim2.new(0, 80, 0, 40)
         offBtn.Position = UDim2.new(0, 100, 0, currentOffset)
-        offBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+        offBtn.BackgroundColor3 = Color3.new(120/255, 0, 0)
         offBtn.Text = "Off"
-        offBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        offBtn.TextColor3 = Color3.new(1, 1, 1)
         offBtn.Font = Enum.Font.SourceSansBold
         offBtn.TextScaled = false
         offBtn.TextSize = 14
@@ -357,43 +415,80 @@ for i, scriptData in ipairs(scripts) do
 
         onBtn.MouseButton1Click:Connect(function()
             if not scriptData.Enabled then
-                scriptData.EnableFunc()
+                print("[DEBUG] Enabling " .. scriptData.Name)
+                scriptData.GlobalOn()
                 scriptData.Enabled = true
-                print(scriptData.Name .. " is now Enabled")
+                print("[DEBUG] " .. scriptData.Name .. " is now Enabled")
             end
         end)
         offBtn.MouseButton1Click:Connect(function()
             if scriptData.Enabled then
-                scriptData.DisableFunc()
+                print("[DEBUG] Disabling " .. scriptData.Name)
+                scriptData.GlobalOff()
                 scriptData.Enabled = false
-                print(scriptData.Name .. " is now Disabled")
+                print("[DEBUG] " .. scriptData.Name .. " is now Disabled")
             end
         end)
     end)
 end
 
--- Fire the first button if one exists to initialize content
-if sidebar:FindFirstChildWhichIsA("TextButton") then
-    sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
-end
+-- COMMENTED OUT: This line was causing the "Fire is not a valid member" error
+-- if sidebar:FindFirstChildWhichIsA("TextButton") then
+--     sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
+-- end
 
--- 5) Self-Destruct Button
+----------------------------------------------------
+-- Self-Destruct Button (Ensures GUI is destroyed NO MATTER WHAT)
+----------------------------------------------------
 destructBtn.MouseButton1Click:Connect(function()
-    print("Self-Destruct Initiated...")
+    print("[DEBUG] Self-Destruct Initiated...")
+    
+    -- Disable each module with debugging prints
+    print("[DEBUG] Attempting to disable Ball Predictor 1...")
+    pcall(function() if _G.BallPredictor1Off then _G.BallPredictor1Off() end end)
+    print("[DEBUG] Attempting to disable Inf Stam...")
+    pcall(function() if _G.InfStamOff then _G.InfStamOff() end end)
+    print("[DEBUG] Attempting to disable Ball Predictor 2...")
+    pcall(function() if _G.BallPredictor2Off then _G.BallPredictor2Off() end end)
+    print("[DEBUG] Attempting to disable Tracers...")
+    pcall(function() if _G.TracersOff then _G.TracersOff() end end)
+    print("[DEBUG] Attempting to disable Map Deleter...")
+    pcall(function() if _G.MapDeleterOff then _G.MapDeleterOff() end end)
+    
+    -- Clear global script references and flags
+    print("[DEBUG] Clearing global script references and flags...")
+    _G.loadedScript1 = nil
+    _G.loadedScript2 = nil
+    _G.loadedScript3 = nil
+    _G.loadedScriptTracers = nil
     _G.script1Enabled = false
-    _G.script2Enabled = false
-    _G.script3Enabled = false
+    _G.InfStamEnabled = false
+    _G.BallPredictor2Enabled = false
     _G.tracersEnabled = false
     _G.mapDeleterEnabled = false
-    loadedScript1 = nil
-    loadedScript2 = nil
-    loadedScript3 = nil
-    loadedScriptTracers = nil
-    screenGui:Destroy()
-    print("GUI and scripts have been destroyed!")
+    
+    -- Optionally, clear the off functions from _G (use with caution)
+    _G.BallPredictor1Off = nil
+    _G.InfStamOff = nil
+    _G.BallPredictor2Off = nil
+    _G.TracersOff = nil
+    _G.MapDeleterOff = nil
+    
+    -- Destroy the GUI regardless of any previous errors
+    print("[DEBUG] Attempting to destroy the GUI...")
+    local success, err = pcall(function() screenGui:Destroy() end)
+    if success then
+        print("[DEBUG] GUI destroyed successfully.")
+    else
+        print("[ERROR] Failed to destroy GUI: " .. tostring(err))
+    end
+
+    print("[DEBUG] Self-Destruct process completed!")
 end)
 
--- 6) Keybind: Shift + P to toggle mainFrame visibility
+----------------------------------------------------
+-- Keybind: Shift + P to toggle mainFrame visibility
+----------------------------------------------------
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.P and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
@@ -410,3 +505,5 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 end)
+
+print("[DEBUG] GUI script finished loading.")

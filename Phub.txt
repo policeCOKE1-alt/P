@@ -1,4 +1,5 @@
--- Original script from pastebin (for Tracers)
+-- Original script with modifications for Map Deleter and scrollable sidebar
+
 local function enableTracers()
     print("Enabling Tracers...")
     _G.tracersEnabled = true
@@ -76,6 +77,19 @@ local function disableScript3()
     loadedScript3 = nil
 end
 
+-- Map Deleter functions
+local function enableMapDeleter()
+    print("Enabling Map Deleter...")
+    _G.mapDeleterEnabled = true
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/policeCOKE1-alt/7/refs/heads/main/MapDeleter.txt", true))()
+end
+
+local function disableMapDeleter()
+    print("Disabling Map Deleter...")
+    _G.mapDeleterEnabled = false
+    _G.MapOff()  -- Map restoration command
+end
+
 -- 3) Build the GUI
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -125,15 +139,22 @@ minimizeButton.TextScaled = false
 minimizeButton.TextSize = 12
 minimizeButton.Parent = topBar
 
--- Sidebar (for script buttons)
-local sidebar = Instance.new("Frame")
+-- Sidebar (for script buttons) as a scrolling frame
+local sidebar = Instance.new("ScrollingFrame")
 sidebar.Name = "Sidebar"
 sidebar.Size = UDim2.new(0, 140, 1, -30)
 sidebar.Position = UDim2.new(0, 0, 0, 30)
 sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 sidebar.BackgroundTransparency = 0.3
 sidebar.BorderSizePixel = 0
+sidebar.CanvasSize = UDim2.new(0, 0, 0, 55 * 5) -- Adjust height based on number of buttons (here 5 scripts)
+sidebar.ScrollBarThickness = 5
 sidebar.Parent = mainFrame
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.Parent = sidebar
+uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+uiListLayout.Padding = UDim.new(0, 5)
 
 -- Right Content Area (for On/Off buttons)
 local contentFrame = Instance.new("Frame")
@@ -225,6 +246,7 @@ local function clearContent()
     end
 end
 
+-- Scripts table with the new Map Deleter entry added
 local scripts = {
     {
         Name = "Ball Predictor 1",
@@ -249,13 +271,20 @@ local scripts = {
         Enabled = false,
         EnableFunc = enableTracers,
         DisableFunc = disableTracers
+    },
+    {
+        Name = "Map Deleter",
+        Enabled = false,
+        EnableFunc = enableMapDeleter,
+        DisableFunc = disableMapDeleter,
+        Warning = "Only turn this on when on a court"
     }
 }
 
+-- Create a button for each script and parent to the scrollable sidebar
 for i, scriptData in ipairs(scripts) do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 50)
-    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 55)
+    btn.Size = UDim2.new(1, -10, 0, 50)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     btn.BackgroundTransparency = 0.3
     btn.BorderSizePixel = 0
@@ -270,6 +299,7 @@ for i, scriptData in ipairs(scripts) do
     btn.MouseButton1Click:Connect(function()
         clearContent()
 
+        -- Title label for the selected script
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.new(1, 0, 0, 40)
         lbl.BackgroundTransparency = 1
@@ -281,9 +311,30 @@ for i, scriptData in ipairs(scripts) do
         lbl.TextWrapped = true
         lbl.Parent = contentFrame
 
+        local currentOffset = 40
+
+        -- If there's a warning message, place it directly below the title
+        if scriptData.Warning then
+            local warnLbl = Instance.new("TextLabel")
+            warnLbl.Size = UDim2.new(1, 0, 0, 20)
+            warnLbl.Position = UDim2.new(0, 0, 0, currentOffset)
+            warnLbl.BackgroundTransparency = 1
+            warnLbl.Text = scriptData.Warning
+            warnLbl.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Yellow color
+            warnLbl.Font = Enum.Font.SourceSansBold
+            warnLbl.TextScaled = false
+            warnLbl.TextSize = 12
+            warnLbl.TextWrapped = true
+            warnLbl.Parent = contentFrame
+            currentOffset = currentOffset + 30  -- Adjust offset for buttons
+        else
+            currentOffset = currentOffset + 10
+        end
+
+        -- On button
         local onBtn = Instance.new("TextButton")
         onBtn.Size = UDim2.new(0, 80, 0, 40)
-        onBtn.Position = UDim2.new(0, 10, 0, 50)
+        onBtn.Position = UDim2.new(0, 10, 0, currentOffset)
         onBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
         onBtn.Text = "On"
         onBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -292,9 +343,10 @@ for i, scriptData in ipairs(scripts) do
         onBtn.TextSize = 14
         onBtn.Parent = contentFrame
 
+        -- Off button
         local offBtn = Instance.new("TextButton")
         offBtn.Size = UDim2.new(0, 80, 0, 40)
-        offBtn.Position = UDim2.new(0, 100, 0, 50)
+        offBtn.Position = UDim2.new(0, 100, 0, currentOffset)
         offBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
         offBtn.Text = "Off"
         offBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -320,6 +372,7 @@ for i, scriptData in ipairs(scripts) do
     end)
 end
 
+-- Fire the first button if one exists to initialize content
 if sidebar:FindFirstChildWhichIsA("TextButton") then
     sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
 end
@@ -331,6 +384,7 @@ destructBtn.MouseButton1Click:Connect(function()
     _G.script2Enabled = false
     _G.script3Enabled = false
     _G.tracersEnabled = false
+    _G.mapDeleterEnabled = false
     loadedScript1 = nil
     loadedScript2 = nil
     loadedScript3 = nil

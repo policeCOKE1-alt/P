@@ -206,6 +206,18 @@ titleLabel.TextSize = 12
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = topBar
 
+-- >>> ADD SHIFT+P LABEL (TOP RIGHT) <<<
+local minimizeLabel = Instance.new("TextLabel")
+minimizeLabel.Size = UDim2.new(0, 160, 1, 0)
+minimizeLabel.Position = UDim2.new(1, -170, 0, 0) -- adjust if needed
+minimizeLabel.BackgroundTransparency = 1
+minimizeLabel.Text = "Shift + P to minimize GUI"
+minimizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeLabel.Font = Enum.Font.SourceSansBold
+minimizeLabel.TextSize = 12
+minimizeLabel.TextXAlignment = Enum.TextXAlignment.Right
+minimizeLabel.Parent = topBar
+
 -- Draggable Top Bar Logic
 local dragging = false
 local dragStart, startPos

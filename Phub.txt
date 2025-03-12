@@ -1,182 +1,193 @@
 ----------------------------------------------------
--- Global Function Definitions (with stop methods)
+-- CLIENTSIDE COLOR CHANGER LOGIC
 ----------------------------------------------------
--- (Ensure these URLs point to your updated remote scripts)
-local script1URL = "https://raw.githubusercontent.com/policeCOKE1-alt/4/refs/heads/main/BallPredictorscript%20-%20Copy.txt"
-local script2URL = "https://raw.githubusercontent.com/policeCOKE1-alt/5/refs/heads/main/InfStamScript%20-%20Copy.txt"
-local script3URL = "https://raw.githubusercontent.com/policeCOKE1-alt/6/refs/heads/main/BallPredicotorScript2%20-%20Copy.txt"
-local tracersURL = "https://raw.githubusercontent.com/policeCOKE1-alt/8/refs/heads/main/Tracers.txt"
-local mapDeleterURL = "https://raw.githubusercontent.com/policeCOKE1-alt/7/refs/heads/main/MapDeleter.txt"
+-- Global color variables (initial defaults)
+local colorChangerEnabled = false
+local newCourtColor = BrickColor.new("Lime green")
+local newBallColor = BrickColor.new("Bright red")
+local newBounceColor = BrickColor.new("Bright yellow")
+local newLandingColor = BrickColor.new("Bright orange")
 
--- Global references to loaded scripts (returned tables)
-_G.loadedScript1 = nil
-_G.loadedScript2 = nil
-_G.loadedScript3 = nil
-_G.loadedScriptTracers = nil
+-- Colors that should remain unchanged for courts
+local excludedColors = {
+    ["Really black"] = true,
+    ["Black"] = true,
+    ["Really white"] = true,
+    ["White"] = true,
+    ["Medium stone grey"] = true,
+    ["Dark stone grey"] = true,
+    ["Light stone grey"] = true,
+}
 
--- Ball Predictor 1
-_G.BallPredictor1On = function()
-    print("[DEBUG] Enabling Ball Predictor 1...")
-    _G.script1Enabled = true
-    if not _G.loadedScript1 then
-        local success, predictor = pcall(function() return loadstring(game:HttpGet(script1URL, true))() end)
-        if success and predictor then
-            _G.loadedScript1 = predictor
+local function updateCourtPartColor(part)
+    if part:IsA("BasePart") then
+        local currentColorName = part.BrickColor.Name
+        if not excludedColors[currentColorName] then
+            print("Updating court part:", part:GetFullName(), "to", newCourtColor.Name)
+            part.BrickColor = newCourtColor
         else
-            warn("[ERROR] Failed to load Ball Predictor 1 script.")
+            print("Skipping court part:", part:GetFullName(), "with excluded color:", currentColorName)
         end
     end
 end
-_G.BallPredictor1Off = function()
-    print("[DEBUG] Disabling Ball Predictor 1...")
-    _G.script1Enabled = false
-    if _G.loadedScript1 and _G.loadedScript1.stop then
-        pcall(function()
-            print("[DEBUG] Calling Ball Predictor 1 stop method...")
-            _G.loadedScript1.stop()
-            print("[DEBUG] Ball Predictor 1 stop method called successfully.")
-        end)
-    else
-        print("[WARN] No stop method available for Ball Predictor 1.")
-    end
-    _G.loadedScript1 = nil
-end
 
--- Inf Stam
-_G.InfStamOn = function()
-    print("[DEBUG] Enabling Inf Stam...")
-    _G.InfStamEnabled = true
-    if not _G.loadedScript2 then
-        local success, stam = pcall(function() return loadstring(game:HttpGet(script2URL, true))() end)
-        if success and stam then
-            _G.loadedScript2 = stam
+local function updateBallObject(object)
+    local lowerName = object.Name:lower()
+    local parentLower = (object.Parent and object.Parent.Name:lower()) or ""
+    local isBounce = lowerName:find("bounce") or parentLower:find("bounce")
+    local isLanding = lowerName:find("land") or parentLower:find("land")
+    
+    if object:IsA("BasePart") then
+        if isBounce then
+            print("Updating Bounce effect BasePart:", object:GetFullName(), "to", newBounceColor.Name)
+            object.BrickColor = newBounceColor
+        elseif isLanding then
+            print("Updating Landing effect BasePart:", object:GetFullName(), "to", newLandingColor.Name)
+            object.BrickColor = newLandingColor
         else
-            warn("[ERROR] Failed to load Inf Stam script.")
+            print("Updating ball BasePart:", object:GetFullName(), "to", newBallColor.Name)
+            object.BrickColor = newBallColor
+        end
+    elseif object:IsA("Trail") then
+        if isBounce then
+            object.Color = ColorSequence.new(newBounceColor.Color)
+        elseif isLanding then
+            object.Color = ColorSequence.new(newLandingColor.Color)
+        else
+            object.Color = ColorSequence.new(newBallColor.Color)
+        end
+    elseif object:IsA("SelectionBox") then
+        if isBounce then
+            object.LineColor = newBounceColor.Color
+        elseif isLanding then
+            object.LineColor = newLandingColor.Color
+        else
+            object.LineColor = newBallColor.Color
+        end
+    elseif object:IsA("ParticleEmitter") then
+        if isBounce then
+            object.Color = ColorSequence.new(newBounceColor.Color)
+        elseif isLanding then
+            object.Color = ColorSequence.new(newLandingColor.Color)
+        else
+            object.Color = ColorSequence.new(newBallColor.Color)
         end
     end
 end
-_G.InfStamOff = function()
-    print("[DEBUG] Disabling Inf Stam...")
-    _G.InfStamEnabled = false
-    if _G.loadedScript2 and _G.loadedScript2.stop then
-        pcall(function()
-            print("[DEBUG] Calling Inf Stam stop method...")
-            _G.loadedScript2.stop()
-            print("[DEBUG] Inf Stam stop method called successfully.")
-        end)
-    else
-        print("[WARN] No stop method available for Inf Stam.")
-    end
-    _G.loadedScript2 = nil
-end
 
--- Ball Predictor 2
-_G.BallPredictor2On = function()
-    print("[DEBUG] Enabling Ball Predictor 2...")
-    _G.BallPredictor2Enabled = true
-    if not _G.loadedScript3 then
-        local success, predictor2 = pcall(function() return loadstring(game:HttpGet(script3URL, true))() end)
-        if success and predictor2 then
-            _G.loadedScript3 = predictor2
-        else
-            warn("[ERROR] Failed to load Ball Predictor 2 script.")
+local function applyColorsToCourts()
+    local courtsFolder = game.Workspace:FindFirstChild("Courts")
+    if courtsFolder then
+        for _, part in ipairs(courtsFolder:GetDescendants()) do
+            updateCourtPartColor(part)
         end
-    end
-end
-_G.BallPredictor2Off = function()
-    print("[DEBUG] Disabling Ball Predictor 2...")
-    _G.BallPredictor2Enabled = false
-    if _G.loadedScript3 and _G.loadedScript3.stop then
-        pcall(function()
-            print("[DEBUG] Calling Ball Predictor 2 stop method...")
-            _G.loadedScript3.stop()
-            print("[DEBUG] Ball Predictor 2 stop method called successfully.")
-        end)
     else
-        print("[WARN] No stop method available for Ball Predictor 2.")
+        warn("Courts folder not found in Workspace.")
     end
-    _G.loadedScript3 = nil
 end
 
--- Tracers
-_G.TracersOn = function()
-    print("[DEBUG] Enabling Tracers...")
-    _G.tracersEnabled = true
-    if not _G.loadedScriptTracers then
-        local success, tracers = pcall(function() return loadstring(game:HttpGet(tracersURL, true))() end)
-        if success and tracers then
-            _G.loadedScriptTracers = tracers
+local function applyColorsToBalls()
+    local holderFolder = game.Workspace:FindFirstChild("Holder")
+    if holderFolder then
+        local ballsFolder = holderFolder:FindFirstChild("Balls")
+        local effectsFolder = holderFolder:FindFirstChild("Effects")
+        if ballsFolder then
+            for _, obj in ipairs(ballsFolder:GetDescendants()) do
+                updateBallObject(obj)
+            end
         else
-            warn("[ERROR] Failed to load Tracers script.")
+            warn("Balls folder not found under Holder.")
         end
-    end
-end
-_G.TracersOff = function()
-    print("[DEBUG] Disabling Tracers...")
-    _G.tracersEnabled = false
-    if _G.loadedScriptTracers and _G.loadedScriptTracers.stop then
-        pcall(function()
-            print("[DEBUG] Calling Tracers stop method...")
-            _G.loadedScriptTracers.stop()
-            print("[DEBUG] Tracers stop method called successfully.")
-        end)
+        if effectsFolder then
+            for _, obj in ipairs(effectsFolder:GetDescendants()) do
+                updateBallObject(obj)
+            end
+        else
+            warn("Effects folder not found under Holder.")
+        end
     else
-        print("[WARN] No stop method available for Tracers.")
+        warn("Holder folder not found in Workspace.")
     end
-    _G.loadedScriptTracers = nil
 end
 
--- Map Deleter
-_G.MapDeleterOn = function()
-    print("[DEBUG] Enabling Map Deleter...")
-    _G.mapDeleterEnabled = true
-    local success = pcall(function() loadstring(game:HttpGet(mapDeleterURL, true))() end)
-    if not success then
-        warn("[ERROR] Failed to load Map Deleter script.")
+local function applyColors()
+    if colorChangerEnabled then
+        applyColorsToCourts()
+        applyColorsToBalls()
     end
 end
-_G.MapDeleterOff = function()
-    print("[DEBUG] Disabling Map Deleter...")
-    _G.mapDeleterEnabled = false
-    if _G.MapOff then
-        pcall(function()
-            print("[DEBUG] Calling MapDeleter stop method (_G.MapOff)...")
-            _G.MapOff()
-            print("[DEBUG] MapDeleter stop method (_G.MapOff) called successfully.")
+
+-- Set event listeners so that new parts are updated as they spawn
+local courtsFolder = game.Workspace:FindFirstChild("Courts")
+if courtsFolder then
+    courtsFolder.DescendantAdded:Connect(function(part)
+        if colorChangerEnabled then
+            updateCourtPartColor(part)
+        end
+    end)
+end
+
+local holderFolder = game.Workspace:FindFirstChild("Holder")
+if holderFolder then
+    local ballsFolder = holderFolder:FindFirstChild("Balls")
+    local effectsFolder = holderFolder:FindFirstChild("Effects")
+    if ballsFolder then
+        ballsFolder.DescendantAdded:Connect(function(obj)
+            if colorChangerEnabled then
+                updateBallObject(obj)
+            end
         end)
-    else
-        print("[WARN] _G.MapOff is not defined; cannot restore the map automatically.")
+    end
+    if effectsFolder then
+        effectsFolder.DescendantAdded:Connect(function(obj)
+            if colorChangerEnabled then
+                updateBallObject(obj)
+            end
+        end)
     end
 end
 
 ----------------------------------------------------
--- GUI Code
+-- GLOBAL FUNCTIONS FOR GUI INTEGRATION (COLOR CHANGER)
+----------------------------------------------------
+_G.CourtBallColourChangerOn = function(courtColor, ballColor)
+    print("[DEBUG] Applying Court Color:", courtColor, "and Ball Color:", ballColor)
+    newCourtColor = BrickColor.new(courtColor)
+    newBallColor = BrickColor.new(ballColor)
+    colorChangerEnabled = true
+    applyColors()
+end
+
+_G.CourtBallColourChangerOff = function()
+    print("[DEBUG] Disabling Court/Ball Colour Changer")
+    colorChangerEnabled = false
+end
+
+----------------------------------------------------
+-- GUI CODE (Using UIListLayouts for neat stacking)
 ----------------------------------------------------
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 print("[DEBUG] Creating GUI...")
 
--- Create ScreenGui
+-- Create main ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MySploitGui"
 screenGui.Parent = playerGui
 
--- Main Frame
+-- Main Frame: 500 x 400, centered
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 250)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+mainFrame.Size = UDim2.new(0, 500, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
-local originalSize = mainFrame.Size
-
--- Top Bar (draggable)
+-- Top Bar (for dragging)
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -185,95 +196,19 @@ topBar.BorderSizePixel = 0
 topBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -40, 1, 0)
+titleLabel.Size = UDim2.new(1, -10, 1, 0)
 titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "Made by PoliceCOKE1"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.TextScaled = false
 titleLabel.TextSize = 12
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = topBar
 
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 40, 1, 0)
-minimizeButton.Position = UDim2.new(1, -40, 0, 0)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-minimizeButton.BackgroundTransparency = 0.3
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.Font = Enum.Font.SourceSansBold
-minimizeButton.TextScaled = false
-minimizeButton.TextSize = 12
-minimizeButton.Parent = topBar
-
--- Sidebar (scrollable frame for script buttons)
-local sidebar = Instance.new("ScrollingFrame")
-sidebar.Name = "Sidebar"
-sidebar.Size = UDim2.new(0, 140, 1, -30)
-sidebar.Position = UDim2.new(0, 0, 0, 30)
-sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-sidebar.BackgroundTransparency = 0.3
-sidebar.BorderSizePixel = 0
-sidebar.CanvasSize = UDim2.new(0, 0, 0, 55 * 5)
-sidebar.ScrollBarThickness = 5
-sidebar.Parent = mainFrame
-
-local uiListLayout = Instance.new("UIListLayout")
-uiListLayout.Parent = sidebar
-uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-uiListLayout.Padding = UDim.new(0, 5)
-
--- Right Content Area (for On/Off buttons)
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "ContentFrame"
-contentFrame.Size = UDim2.new(1, -140, 1, -30)
-contentFrame.Position = UDim2.new(0, 140, 0, 30)
-contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-contentFrame.BackgroundTransparency = 0.3
-contentFrame.BorderSizePixel = 0
-contentFrame.Parent = mainFrame
-
--- Self-Destruct Button (bottom right corner)
-local destructBtn = Instance.new("TextButton")
-destructBtn.Size = UDim2.new(0, 80, 0, 30)
-destructBtn.Position = UDim2.new(1, -90, 1, -40)
-destructBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-destructBtn.Text = "Self-Destruct"
-destructBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-destructBtn.Font = Enum.Font.SourceSansBold
-destructBtn.TextScaled = false
-destructBtn.TextSize = 12
-destructBtn.Parent = mainFrame
-
-local function updateVisibility(isMinimized)
-    sidebar.Visible = not isMinimized
-    contentFrame.Visible = not isMinimized
-    destructBtn.Visible = not isMinimized
-    titleLabel.Visible = not isMinimized
-end
-
-local minimized = false
-updateVisibility(minimized)
-
-minimizeButton.MouseButton1Click:Connect(function()
-    if not minimized then
-        minimized = true
-        mainFrame.Size = UDim2.new(0, 40, 0, 40)
-        minimizeButton.Text = "+"
-        updateVisibility(minimized)
-    else
-        minimized = false
-        mainFrame.Size = originalSize
-        minimizeButton.Text = "-"
-        updateVisibility(minimized)
-    end
-end)
-
--- Dragging functionality for the GUI
+-- Draggable Top Bar Logic
 local dragging = false
-local dragInput, dragStart, startPos
+local dragStart, startPos
 topBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -287,29 +222,99 @@ topBar.InputBegan:Connect(function(input)
     end
 end)
 topBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
         local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
     end
 end)
 
-----------------------------------------------------
--- Scripts Sidebar and Content (On/Off Buttons)
-----------------------------------------------------
-local function clearContent()
-    for _, child in pairs(contentFrame:GetChildren()) do
-        if child:IsA("GuiObject") then
-            child:Destroy()
-        end
+-- SHIFT+P toggles the GUI visibility
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.P and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+        mainFrame.Visible = not mainFrame.Visible
     end
-end
+end)
 
--- Updated scripts table using our new global functions
+-- Sidebar: 160 px wide
+local sidebar = Instance.new("ScrollingFrame")
+sidebar.Size = UDim2.new(0, 160, 1, -30)
+sidebar.Position = UDim2.new(0, 0, 0, 30)
+sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+sidebar.BackgroundTransparency = 0.3
+sidebar.BorderSizePixel = 0
+sidebar.CanvasSize = UDim2.new(0, 0, 0, 55 * 7)
+sidebar.ScrollBarThickness = 5
+sidebar.Parent = mainFrame
+
+local sidebarLayout = Instance.new("UIListLayout")
+sidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+sidebarLayout.Padding = UDim.new(0, 5)
+sidebarLayout.Parent = sidebar
+
+-- Content Frame (remaining area)
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, -160, 1, -30)
+contentFrame.Position = UDim2.new(0, 160, 0, 30)
+contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+contentFrame.BackgroundTransparency = 0.3
+contentFrame.BorderSizePixel = 0
+contentFrame.Parent = mainFrame
+
+local contentLayout = Instance.new("UIListLayout")
+contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+contentLayout.Padding = UDim.new(0, 10)
+contentLayout.Parent = contentFrame
+
+-- Self-Destruct Button (bottom-right)
+local destructBtn = Instance.new("TextButton")
+destructBtn.Size = UDim2.new(0, 90, 0, 30)
+destructBtn.Position = UDim2.new(1, -100, 1, -40)
+destructBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+destructBtn.Text = "Self-Destruct"
+destructBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+destructBtn.Font = Enum.Font.SourceSansBold
+destructBtn.TextSize = 12
+destructBtn.Parent = mainFrame
+
+destructBtn.MouseButton1Click:Connect(function()
+    print("[DEBUG] Self-Destruct Initiated...")
+    -- Turn off any running scripts
+    pcall(function() if _G.BallPredictor1Off then _G.BallPredictor1Off() end end)
+    pcall(function() if _G.InfStamOff then _G.InfStamOff() end end)
+    pcall(function() if _G.BallPredictor2Off then _G.BallPredictor2Off() end end)
+    pcall(function() if _G.TracersOff then _G.TracersOff() end end)
+    pcall(function() if _G.MapDeleterOff then _G.MapDeleterOff() end end)
+    
+    _G.loadedScript1 = nil
+    _G.loadedScript2 = nil
+    _G.loadedScript3 = nil
+    _G.loadedScriptTracers = nil
+    _G.script1Enabled = false
+    _G.InfStamEnabled = false
+    _G.BallPredictor2Enabled = false
+    _G.tracersEnabled = false
+    _G.mapDeleterEnabled = false
+
+    _G.BallPredictor1Off = nil
+    _G.InfStamOff = nil
+    _G.BallPredictor2Off = nil
+    _G.TracersOff = nil
+    _G.MapDeleterOff = nil
+
+    print("[DEBUG] Destroying GUI...")
+    screenGui:Destroy()
+    print("[DEBUG] Self-Destruct process completed!")
+end)
+
+----------------------------------------------------
+-- Scripts Table
+----------------------------------------------------
 local scripts = {
     {
         Name = "Ball Predictor 1",
@@ -341,12 +346,137 @@ local scripts = {
         GlobalOn = _G.MapDeleterOn,
         GlobalOff = _G.MapDeleterOff,
         Warning = "Only turn this on when on a court"
+    },
+    {
+        Name = "Court/Ball Colour Changer",
+        Enabled = false,
+        GlobalOn = _G.CourtBallColourChangerOn,
+        GlobalOff = _G.CourtBallColourChangerOff,
+        ColourChanger = true
     }
 }
 
+----------------------------------------------------
+-- COLOR PICKER FUNCTION
+----------------------------------------------------
+local function createColorPicker(titleText)
+    -- Container frame for the color picker
+    local cpFrame = Instance.new("Frame")
+    cpFrame.Size = UDim2.new(1, 0, 0, 110)
+    cpFrame.BackgroundTransparency = 1
+
+    -- Title label
+    local cpTitle = Instance.new("TextLabel")
+    cpTitle.Size = UDim2.new(1, 0, 0, 20)
+    cpTitle.BackgroundTransparency = 1
+    cpTitle.Text = titleText
+    cpTitle.TextColor3 = Color3.fromRGB(255,255,255)
+    cpTitle.Font = Enum.Font.SourceSansBold
+    cpTitle.TextSize = 14
+    cpTitle.Parent = cpFrame
+
+    -- Preview box
+    local preview = Instance.new("Frame")
+    preview.Size = UDim2.new(0, 50, 0, 30)
+    preview.Position = UDim2.new(0, 0, 0, 25)
+    preview.BackgroundColor3 = Color3.fromRGB(255,0,0)
+    preview.BorderSizePixel = 1
+    preview.BorderColor3 = Color3.new(0,0,0)
+    preview.Parent = cpFrame
+
+    -- Frame to hold the sliders
+    local slidersFrame = Instance.new("Frame")
+    slidersFrame.Size = UDim2.new(1, -60, 0, 70)
+    slidersFrame.Position = UDim2.new(0, 60, 0, 20)
+    slidersFrame.BackgroundTransparency = 1
+    slidersFrame.Parent = cpFrame
+
+    local slidersLayout = Instance.new("UIListLayout")
+    slidersLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    slidersLayout.Padding = UDim.new(0, 5)
+    slidersLayout.Parent = slidersFrame
+
+    -- Default color = Red (255,0,0)
+    local red, green, blue = 255, 0, 0
+
+    local function updatePreview()
+        preview.BackgroundColor3 = Color3.fromRGB(red, green, blue)
+    end
+
+    local function createSlider(labelText, initialValue, onChange)
+        local sliderRow = Instance.new("Frame")
+        sliderRow.Size = UDim2.new(1, 0, 0, 20)
+        sliderRow.BackgroundTransparency = 1
+        sliderRow.Parent = slidersFrame
+
+        local sliderLabel = Instance.new("TextLabel")
+        sliderLabel.Size = UDim2.new(0, 40, 1, 0)
+        sliderLabel.BackgroundTransparency = 1
+        sliderLabel.Text = labelText
+        sliderLabel.TextColor3 = Color3.fromRGB(255,255,255)
+        sliderLabel.Font = Enum.Font.SourceSansBold
+        sliderLabel.TextSize = 14
+        sliderLabel.Parent = sliderRow
+
+        local sliderBar = Instance.new("Frame")
+        sliderBar.Size = UDim2.new(1, -45, 1, 0)
+        sliderBar.Position = UDim2.new(0, 45, 0, 0)
+        sliderBar.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        sliderBar.BorderSizePixel = 0
+        sliderBar.Parent = sliderRow
+
+        local sliderButton = Instance.new("TextButton")
+        sliderButton.Size = UDim2.new(0, 10, 1, 0)
+        sliderButton.BackgroundColor3 = Color3.fromRGB(200,200,200)
+        sliderButton.Text = ""
+        sliderButton.Parent = sliderBar
+
+        local value = initialValue
+        sliderButton.Position = UDim2.new(0, math.floor((value/255) * (sliderBar.AbsoluteSize.X - 10)), 0, 0)
+
+        local function setValue(newVal)
+            value = math.clamp(newVal, 0, 255)
+            local px = (value/255) * (sliderBar.AbsoluteSize.X - 10)
+            sliderButton.Position = UDim2.new(0, px, 0, 0)
+            onChange(value)
+        end
+
+        sliderButton.MouseButton1Down:Connect(function()
+            local uis = game:GetService("UserInputService")
+            local moveConn, releaseConn
+            moveConn = uis.InputChanged:Connect(function(i)
+                if i.UserInputType == Enum.UserInputType.MouseMovement then
+                    local mouseX = i.Position.X - sliderBar.AbsolutePosition.X
+                    setValue(math.floor((mouseX/(sliderBar.AbsoluteSize.X - 10)) * 255))
+                end
+            end)
+            releaseConn = uis.InputEnded:Connect(function(u)
+                if u.UserInputType == Enum.UserInputType.MouseButton1 then
+                    moveConn:Disconnect()
+                    releaseConn:Disconnect()
+                end
+            end)
+        end)
+
+        setValue(initialValue)
+    end
+
+    -- Create three sliders (R, G, B)
+    createSlider("Red:",   255, function(val) red = val;   updatePreview() end)
+    createSlider("Green:", 0,   function(val) green = val; updatePreview() end)
+    createSlider("Blue:",  0,   function(val) blue = val;  updatePreview() end)
+
+    -- Return the container frame and a function to get the current Color3
+    return cpFrame, function()
+        return Color3.fromRGB(red, green, blue)
+    end
+end
+
+----------------------------------------------------
+-- Build Sidebar Buttons & Panels
+----------------------------------------------------
 for i, scriptData in ipairs(scripts) do
     local btn = Instance.new("TextButton")
-    -- Making the sidebar buttons a little smaller (height reduced to 40)
     btn.Size = UDim2.new(1, -10, 0, 40)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     btn.BackgroundTransparency = 0.3
@@ -354,163 +484,152 @@ for i, scriptData in ipairs(scripts) do
     btn.Text = scriptData.Name
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.SourceSansBold
-    btn.TextScaled = false
-    -- Reduced text size for sidebar buttons
     btn.TextSize = 12
     btn.TextWrapped = true
     btn.Parent = sidebar
 
     btn.MouseButton1Click:Connect(function()
-        clearContent()
+        -- Clear old content
+        for _, child in pairs(contentFrame:GetChildren()) do
+            child:Destroy()
+        end
+        
+        local scriptPanel = Instance.new("Frame")
+        scriptPanel.Size = UDim2.new(1, -10, 0, 0)
+        scriptPanel.BackgroundTransparency = 1
+        scriptPanel.Parent = contentFrame
 
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(1, 0, 0, 40)
-        lbl.BackgroundTransparency = 1
-        lbl.Text = scriptData.Name
-        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        lbl.Font = Enum.Font.SourceSansBold
-        lbl.TextScaled = false
-        lbl.TextSize = 14
-        lbl.TextWrapped = true
-        lbl.Parent = contentFrame
+        local panelLayout = Instance.new("UIListLayout")
+        panelLayout.Padding = UDim.new(0, 5)
+        panelLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        panelLayout.Parent = scriptPanel
 
-        local currentOffset = 40
+        local panelTitle = Instance.new("TextLabel")
+        panelTitle.Size = UDim2.new(1, 0, 0, 30)
+        panelTitle.BackgroundTransparency = 1
+        panelTitle.Text = scriptData.Name
+        panelTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        panelTitle.Font = Enum.Font.SourceSansBold
+        panelTitle.TextSize = 16
+        panelTitle.Parent = scriptPanel
 
         if scriptData.Warning then
-            local warnLbl = Instance.new("TextLabel")
-            warnLbl.Size = UDim2.new(1, 0, 0, 20)
-            warnLbl.Position = UDim2.new(0, 0, 0, currentOffset)
-            warnLbl.BackgroundTransparency = 1
-            warnLbl.Text = scriptData.Warning
-            warnLbl.TextColor3 = Color3.new(0.607843, 0.058824, 0.058824)
-            warnLbl.Font = Enum.Font.SourceSansBold
-            warnLbl.TextScaled = false
-            warnLbl.TextSize = 12
-            warnLbl.TextWrapped = true
-            warnLbl.Parent = contentFrame
-            currentOffset = currentOffset + 30
-        else
-            currentOffset = currentOffset + 10
+            local warnLabel = Instance.new("TextLabel")
+            warnLabel.Size = UDim2.new(1, 0, 0, 20)
+            warnLabel.BackgroundTransparency = 1
+            warnLabel.Text = scriptData.Warning
+            warnLabel.TextColor3 = Color3.fromRGB(155, 15, 15)
+            warnLabel.Font = Enum.Font.SourceSansBold
+            warnLabel.TextSize = 14
+            warnLabel.Parent = scriptPanel
         end
 
-                -- On/Off buttons moved further to the right and styled to remove the blue outline.
-        local onBtn = Instance.new("TextButton")
-        onBtn.Size = UDim2.new(0, 80, 0, 40)
-        onBtn.Position = UDim2.new(0, 40, 0, currentOffset)  -- increased X offset
-        onBtn.BackgroundColor3 = Color3.new(0.086275, 0.086275, 0.086275)  -- black background
-        onBtn.Text = "On"
-        onBtn.TextColor3 = Color3.new(1, 1, 1)  -- white text
-        onBtn.Font = Enum.Font.SourceSansBold
-        onBtn.TextScaled = false
-        onBtn.TextSize = 14
-        onBtn.AutoButtonColor = false  -- disable default blue highlight
-        onBtn.BorderSizePixel = 0       -- remove border
-        onBtn.Parent = contentFrame
+        if scriptData.ColourChanger then
+            -- Create color pickers for Court and Ball
+            local colorPickerFrameCourt, getCourtColor = createColorPicker("Court Colour (RGB):")
+            colorPickerFrameCourt.Parent = scriptPanel
 
-        local offBtn = Instance.new("TextButton")
-        offBtn.Size = UDim2.new(0, 80, 0, 40)
-        offBtn.Position = UDim2.new(0, 130, 0, currentOffset)  -- adjusted further to the right
-        offBtn.BackgroundColor3 = Color3.new(0.086275, 0.086275, 0.086275)  -- black background
-        offBtn.Text = "Off"
-        offBtn.TextColor3 = Color3.new(1, 1, 1)  -- white text
-        offBtn.Font = Enum.Font.SourceSansBold
-        offBtn.TextScaled = false
-        offBtn.TextSize = 14
-        offBtn.AutoButtonColor = false  -- disable default blue highlight
-        offBtn.BorderSizePixel = 0       -- remove border
-        offBtn.Parent = contentFrame
+            local colorPickerFrameBall, getBallColor = createColorPicker("Ball Colour (RGB):")
+            colorPickerFrameBall.Parent = scriptPanel
 
-        onBtn.MouseButton1Click:Connect(function()
-            if not scriptData.Enabled then
-                print("[DEBUG] Enabling " .. scriptData.Name)
-                scriptData.GlobalOn()
+            -- Button row (Apply/Off)
+            local buttonRow = Instance.new("Frame")
+            buttonRow.Size = UDim2.new(1, 0, 0, 40)
+            buttonRow.BackgroundTransparency = 1
+            buttonRow.Parent = scriptPanel
+
+            local buttonRowLayout = Instance.new("UIListLayout")
+            buttonRowLayout.FillDirection = Enum.FillDirection.Horizontal
+            buttonRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            buttonRowLayout.Padding = UDim.new(0, 10)
+            buttonRowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+            buttonRowLayout.Parent = buttonRow
+
+            local applyBtn = Instance.new("TextButton")
+            applyBtn.Size = UDim2.new(0, 60, 0, 30)
+            applyBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+            applyBtn.Text = "Apply"
+            applyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            applyBtn.Font = Enum.Font.SourceSansBold
+            applyBtn.TextSize = 14
+            applyBtn.BorderSizePixel = 1
+            applyBtn.BorderColor3 = Color3.new(0,0,0)
+            applyBtn.Parent = buttonRow
+
+            local offBtn = Instance.new("TextButton")
+            offBtn.Size = UDim2.new(0, 60, 0, 30)
+            offBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+            offBtn.Text = "Off"
+            offBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            offBtn.Font = Enum.Font.SourceSansBold
+            offBtn.TextSize = 14
+            offBtn.BorderSizePixel = 1
+            offBtn.BorderColor3 = Color3.new(0,0,0)
+            offBtn.Parent = buttonRow
+
+            applyBtn.MouseButton1Click:Connect(function()
+                local courtC = getCourtColor()
+                local ballC = getBallColor()
+                print("[DEBUG] Applying Court:", courtC, "Ball:", ballC)
+                scriptData.GlobalOn(courtC, ballC)
                 scriptData.Enabled = true
-                print("[DEBUG] " .. scriptData.Name .. " is now Enabled")
-            end
-        end)
-        offBtn.MouseButton1Click:Connect(function()
-            if scriptData.Enabled then
-                print("[DEBUG] Disabling " .. scriptData.Name)
-                scriptData.GlobalOff()
-                scriptData.Enabled = false
-                print("[DEBUG] " .. scriptData.Name .. " is now Disabled")
-            end
-        end)
+            end)
+
+            offBtn.MouseButton1Click:Connect(function()
+                if scriptData.Enabled then
+                    print("[DEBUG] Disabling Court/Ball Colour Changer")
+                    scriptData.GlobalOff()
+                    scriptData.Enabled = false
+                end
+            end)
+        else
+            -- For non-colour-changer scripts, just On/Off
+            local buttonRow = Instance.new("Frame")
+            buttonRow.Size = UDim2.new(1, 0, 0, 40)
+            buttonRow.BackgroundTransparency = 1
+            buttonRow.Parent = scriptPanel
+
+            local buttonRowLayout = Instance.new("UIListLayout")
+            buttonRowLayout.FillDirection = Enum.FillDirection.Horizontal
+            buttonRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            buttonRowLayout.Padding = UDim.new(0, 10)
+            buttonRowLayout.Parent = buttonRow
+
+            local onBtn = Instance.new("TextButton")
+            onBtn.Size = UDim2.new(0, 80, 1, 0)
+            onBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+            onBtn.Text = "On"
+            onBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            onBtn.Font = Enum.Font.SourceSansBold
+            onBtn.TextSize = 14
+            onBtn.Parent = buttonRow
+
+            local offBtn = Instance.new("TextButton")
+            offBtn.Size = UDim2.new(0, 80, 1, 0)
+            offBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+            offBtn.Text = "Off"
+            offBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            offBtn.Font = Enum.Font.SourceSansBold
+            offBtn.TextSize = 14
+            offBtn.Parent = buttonRow
+
+            onBtn.MouseButton1Click:Connect(function()
+                if not scriptData.Enabled then
+                    print("[DEBUG] Enabling " .. scriptData.Name)
+                    scriptData.GlobalOn()
+                    scriptData.Enabled = true
+                end
+            end)
+
+            offBtn.MouseButton1Click:Connect(function()
+                if scriptData.Enabled then
+                    print("[DEBUG] Disabling " .. scriptData.Name)
+                    scriptData.GlobalOff()
+                    scriptData.Enabled = false
+                end
+            end)
+        end
     end)
 end
-
--- COMMENTED OUT: This line was causing the "Fire is not a valid member" error
--- if sidebar:FindFirstChildWhichIsA("TextButton") then
---     sidebar:FindFirstChildWhichIsA("TextButton").MouseButton1Click:Fire()
--- end
-
-----------------------------------------------------
--- Self-Destruct Button (Ensures GUI is destroyed NO MATTER WHAT)
-----------------------------------------------------
-destructBtn.MouseButton1Click:Connect(function()
-    print("[DEBUG] Self-Destruct Initiated...")
-    
-    -- Disable each module with debugging prints
-    print("[DEBUG] Attempting to disable Ball Predictor 1...")
-    pcall(function() if _G.BallPredictor1Off then _G.BallPredictor1Off() end end)
-    print("[DEBUG] Attempting to disable Inf Stam...")
-    pcall(function() if _G.InfStamOff then _G.InfStamOff() end end)
-    print("[DEBUG] Attempting to disable Ball Predictor 2...")
-    pcall(function() if _G.BallPredictor2Off then _G.BallPredictor2Off() end end)
-    print("[DEBUG] Attempting to disable Tracers...")
-    pcall(function() if _G.TracersOff then _G.TracersOff() end end)
-    print("[DEBUG] Attempting to disable Map Deleter...")
-    pcall(function() if _G.MapDeleterOff then _G.MapDeleterOff() end end)
-    
-    -- Clear global script references and flags
-    print("[DEBUG] Clearing global script references and flags...")
-    _G.loadedScript1 = nil
-    _G.loadedScript2 = nil
-    _G.loadedScript3 = nil
-    _G.loadedScriptTracers = nil
-    _G.script1Enabled = false
-    _G.InfStamEnabled = false
-    _G.BallPredictor2Enabled = false
-    _G.tracersEnabled = false
-    _G.mapDeleterEnabled = false
-    
-    -- Optionally, clear the off functions from _G (use with caution)
-    _G.BallPredictor1Off = nil
-    _G.InfStamOff = nil
-    _G.BallPredictor2Off = nil
-    _G.TracersOff = nil
-    _G.MapDeleterOff = nil
-    
-    -- Destroy the GUI regardless of any previous errors
-    print("[DEBUG] Attempting to destroy the GUI...")
-    local success, err = pcall(function() screenGui:Destroy() end)
-    if success then
-        print("[DEBUG] GUI destroyed successfully.")
-    else
-        print("[ERROR] Failed to destroy GUI: " .. tostring(err))
-    end
-
-    print("[DEBUG] Self-Destruct process completed!")
-end)
-
-----------------------------------------------------
--- Keybind: Shift + P to toggle mainFrame visibility
-----------------------------------------------------
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.P and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-        if minimized then
-            minimized = false
-            mainFrame.Size = originalSize
-            minimizeButton.Text = "-"
-            updateVisibility(minimized)
-        else
-            minimized = true
-            mainFrame.Size = UDim2.new(0, 40, 0, 40)
-            minimizeButton.Text = "+"
-            updateVisibility(minimized)
-        end
-    end
-end)
 
 print("[DEBUG] GUI script finished loading.")

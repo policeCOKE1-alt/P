@@ -14,7 +14,6 @@ _G.loadedScriptTracers = nil
 
 -- Ball Predictor 1
 _G.BallPredictor1On = function()
-    print("[DEBUG] Enabling Ball Predictor 1...")
     _G.script1Enabled = true
     if not _G.loadedScript1 then
         local success, predictor = pcall(function() return loadstring(game:HttpGet(script1URL, true))() end)
@@ -26,23 +25,19 @@ _G.BallPredictor1On = function()
     end
 end
 _G.BallPredictor1Off = function()
-    print("[DEBUG] Disabling Ball Predictor 1...")
     _G.script1Enabled = false
     if _G.loadedScript1 and _G.loadedScript1.stop then
         pcall(function()
-            print("[DEBUG] Calling Ball Predictor 1 stop method...")
             _G.loadedScript1.stop()
-            print("[DEBUG] Ball Predictor 1 stop method called successfully.")
         end)
     else
-        print("[WARN] No stop method available for Ball Predictor 1.")
+        -- No stop method available for Ball Predictor 1.
     end
     _G.loadedScript1 = nil
 end
 
 -- Inf Stam
 _G.InfStamOn = function()
-    print("[DEBUG] Enabling Inf Stam...")
     _G.InfStamEnabled = true
     if not _G.loadedScript2 then
         local success, stam = pcall(function() return loadstring(game:HttpGet(script2URL, true))() end)
@@ -54,23 +49,19 @@ _G.InfStamOn = function()
     end
 end
 _G.InfStamOff = function()
-    print("[DEBUG] Disabling Inf Stam...")
     _G.InfStamEnabled = false
     if _G.loadedScript2 and _G.loadedScript2.stop then
         pcall(function()
-            print("[DEBUG] Calling Inf Stam stop method...")
             _G.loadedScript2.stop()
-            print("[DEBUG] Inf Stam stop method called successfully.")
         end)
     else
-        print("[WARN] No stop method available for Inf Stam.")
+        -- No stop method available for Inf Stam.
     end
     _G.loadedScript2 = nil
 end
 
 -- Ball Predictor 2
 _G.BallPredictor2On = function()
-    print("[DEBUG] Enabling Ball Predictor 2...")
     _G.BallPredictor2Enabled = true
     if not _G.loadedScript3 then
         local success, predictor2 = pcall(function() return loadstring(game:HttpGet(script3URL, true))() end)
@@ -82,23 +73,19 @@ _G.BallPredictor2On = function()
     end
 end
 _G.BallPredictor2Off = function()
-    print("[DEBUG] Disabling Ball Predictor 2...")
     _G.BallPredictor2Enabled = false
     if _G.loadedScript3 and _G.loadedScript3.stop then
         pcall(function()
-            print("[DEBUG] Calling Ball Predictor 2 stop method...")
             _G.loadedScript3.stop()
-            print("[DEBUG] Ball Predictor 2 stop method called successfully.")
         end)
     else
-        print("[WARN] No stop method available for Ball Predictor 2.")
+        -- No stop method available for Ball Predictor 2.
     end
     _G.loadedScript3 = nil
 end
 
 -- Tracers
 _G.TracersOn = function()
-    print("[DEBUG] Enabling Tracers...")
     _G.tracersEnabled = true
     if not _G.loadedScriptTracers then
         local success, tracers = pcall(function() return loadstring(game:HttpGet(tracersURL, true))() end)
@@ -110,23 +97,19 @@ _G.TracersOn = function()
     end
 end
 _G.TracersOff = function()
-    print("[DEBUG] Disabling Tracers...")
     _G.tracersEnabled = false
     if _G.loadedScriptTracers and _G.loadedScriptTracers.stop then
         pcall(function()
-            print("[DEBUG] Calling Tracers stop method...")
             _G.loadedScriptTracers.stop()
-            print("[DEBUG] Tracers stop method called successfully.")
         end)
     else
-        print("[WARN] No stop method available for Tracers.")
+        -- No stop method available for Tracers.
     end
     _G.loadedScriptTracers = nil
 end
 
 -- Map Deleter
 _G.MapDeleterOn = function()
-    print("[DEBUG] Enabling Map Deleter...")
     _G.mapDeleterEnabled = true
     local success = pcall(function() loadstring(game:HttpGet(mapDeleterURL, true))() end)
     if not success then
@@ -134,16 +117,13 @@ _G.MapDeleterOn = function()
     end
 end
 _G.MapDeleterOff = function()
-    print("[DEBUG] Disabling Map Deleter...")
     _G.mapDeleterEnabled = false
     if _G.MapOff then
         pcall(function()
-            print("[DEBUG] Calling MapDeleter stop method (_G.MapOff)...")
             _G.MapOff()
-            print("[DEBUG] MapDeleter stop method (_G.MapOff) called successfully.")
         end)
     else
-        print("[WARN] _G.MapOff is not defined; cannot restore the map automatically.")
+        -- _G.MapOff is not defined; cannot restore the map automatically.
     end
 end
 
@@ -171,10 +151,9 @@ local function updateCourtPartColor(part)
     if part:IsA("BasePart") then
         local currentColorName = part.BrickColor.Name
         if not excludedColors[currentColorName] then
-            print("Updating court part:", part:GetFullName(), "to", newCourtColor.Name)
             part.BrickColor = newCourtColor
         else
-            print("Skipping court part:", part:GetFullName(), "with excluded color:", currentColorName)
+            -- Skipping court part with excluded color.
         end
     end
 end
@@ -187,7 +166,6 @@ local function updateBallObject(object)
     if lowerName:find("soul") or parentLower:find("soul")
        or lowerName:find("corrupted") or parentLower:find("corrupted")
        or lowerName:find("swing") or parentLower:find("swing") then
-        -- Skip changing colors
         return
     end
 
@@ -196,13 +174,10 @@ local function updateBallObject(object)
 
     if object:IsA("BasePart") then
         if isBounce then
-            print("Updating Bounce effect BasePart:", object:GetFullName(), "to", newBounceColor.Name)
             object.BrickColor = newBounceColor
         elseif isLanding then
-            print("Updating Landing effect BasePart:", object:GetFullName(), "to", newLandingColor.Name)
             object.BrickColor = newLandingColor
         else
-            print("Updating ball BasePart:", object:GetFullName(), "to", newBallColor.Name)
             object.BrickColor = newBallColor
         end
     elseif object:IsA("Trail") then
@@ -308,7 +283,6 @@ end
 -- GLOBAL FUNCTIONS FOR GUI INTEGRATION (COLOR CHANGER)
 ----------------------------------------------------
 _G.CourtBallColourChangerOn = function(courtColor, ballColor)
-    print("[DEBUG] Applying Court Color:", courtColor, "and Ball Color:", ballColor)
     newCourtColor = BrickColor.new(courtColor)
     newBallColor = BrickColor.new(ballColor)
     colorChangerEnabled = true
@@ -316,7 +290,6 @@ _G.CourtBallColourChangerOn = function(courtColor, ballColor)
 end
 
 _G.CourtBallColourChangerOff = function()
-    print("[DEBUG] Disabling Court/Ball Colour Changer")
     colorChangerEnabled = false
 end
 
@@ -327,8 +300,6 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-
-print("[DEBUG] Creating GUI...")
 
 -- Create main ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -452,7 +423,6 @@ destructBtn.TextSize = 12
 destructBtn.Parent = mainFrame
 
 destructBtn.MouseButton1Click:Connect(function()
-    print("[DEBUG] Self-Destruct Initiated...")
     pcall(function() if _G.BallPredictor1Off then _G.BallPredictor1Off() end end)
     pcall(function() if _G.InfStamOff then _G.InfStamOff() end end)
     pcall(function() if _G.BallPredictor2Off then _G.BallPredictor2Off() end end)
@@ -475,21 +445,17 @@ destructBtn.MouseButton1Click:Connect(function()
     _G.TracersOff = nil
     _G.MapDeleterOff = nil
 
-    print("[DEBUG] Destroying GUI...")
     screenGui:Destroy()
-    print("[DEBUG] Self-Destruct process completed!")
 end)
 
 ----------------------------------------------------
 -- COLOR PICKER FUNCTION (for Court/Ball Changer)
 ----------------------------------------------------
 local function createColorPicker(titleText)
-    -- Container frame for the color picker
     local cpFrame = Instance.new("Frame")
     cpFrame.Size = UDim2.new(1, 0, 0, 110)
     cpFrame.BackgroundTransparency = 1
 
-    -- Title label
     local cpTitle = Instance.new("TextLabel")
     cpTitle.Size = UDim2.new(1, 0, 0, 20)
     cpTitle.BackgroundTransparency = 1
@@ -499,16 +465,14 @@ local function createColorPicker(titleText)
     cpTitle.TextSize = 14
     cpTitle.Parent = cpFrame
 
-    -- Preview box (shifted slightly to the right)
     local preview = Instance.new("Frame")
     preview.Size = UDim2.new(0, 50, 0, 30)
-    preview.Position = UDim2.new(0, 6, 0.1, 25) -- Moved to overlap the scrollbar area
+    preview.Position = UDim2.new(0, 6, 0.1, 25)
     preview.BackgroundColor3 = Color3.fromRGB(255,0,0)
     preview.BorderSizePixel = 1
     preview.BorderColor3 = Color3.fromRGB(0,0,0)
     preview.Parent = cpFrame
 
-    -- Frame to hold the sliders
     local slidersFrame = Instance.new("Frame")
     slidersFrame.Size = UDim2.new(1, -60, 0, 70)
     slidersFrame.Position = UDim2.new(0, 60, 0, 20)
@@ -520,7 +484,6 @@ local function createColorPicker(titleText)
     slidersLayout.Padding = UDim.new(0, 5)
     slidersLayout.Parent = slidersFrame
 
-    -- Default color = Red (255,0,0)
     local red, green, blue = 255, 0, 0
 
     local function updatePreview()
@@ -585,12 +548,10 @@ local function createColorPicker(titleText)
         setValue(initialValue)
     end
 
-    -- Create three sliders (R, G, B)
     createSlider("Red:",   255, function(val) red = val;   updatePreview() end)
     createSlider("Green:", 0,   function(val) green = val; updatePreview() end)
     createSlider("Blue:",  0,   function(val) blue = val;  updatePreview() end)
 
-    -- Return the container frame and a function to get the current Color3
     return cpFrame, function()
         return Color3.fromRGB(red, green, blue)
     end
@@ -640,7 +601,6 @@ local scripts = {
     }
 }
 
--- Utility to clear old content in the main panel
 local function clearContent()
     for _, child in pairs(contentFrame:GetChildren()) do
         if child:IsA("GuiObject") then
@@ -695,7 +655,6 @@ for _, scriptData in ipairs(scripts) do
             warnLabel.Parent = scriptPanel
         end
 
-        -- If it's the Colour Changer
         if scriptData.ColourChanger then
             local colorPickerFrameCourt, getCourtColor = createColorPicker("Court Colour (RGB):")
             colorPickerFrameCourt.Parent = scriptPanel
@@ -719,7 +678,7 @@ for _, scriptData in ipairs(scripts) do
             applyBtn.Size = UDim2.new(0, 60, 0, 30)
             applyBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
             applyBtn.BorderSizePixel = 1
-            applyBtn.BorderColor3 = Color3.fromRGB(0,0,0) -- black outline
+            applyBtn.BorderColor3 = Color3.fromRGB(0,0,0)
             applyBtn.Text = "Apply"
             applyBtn.TextColor3 = Color3.fromRGB(255,255,255)
             applyBtn.Font = Enum.Font.SourceSansBold
@@ -730,7 +689,7 @@ for _, scriptData in ipairs(scripts) do
             offBtn.Size = UDim2.new(0, 60, 0, 30)
             offBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
             offBtn.BorderSizePixel = 1
-            offBtn.BorderColor3 = Color3.fromRGB(0,0,0) -- black outline
+            offBtn.BorderColor3 = Color3.fromRGB(0,0,0)
             offBtn.Text = "Off"
             offBtn.TextColor3 = Color3.fromRGB(255,255,255)
             offBtn.Font = Enum.Font.SourceSansBold
@@ -740,20 +699,17 @@ for _, scriptData in ipairs(scripts) do
             applyBtn.MouseButton1Click:Connect(function()
                 local courtC = getCourtColor()
                 local ballC = getBallColor()
-                print("[DEBUG] Applying Court:", courtC, "Ball:", ballC)
                 pcall(function() scriptData.GlobalOn(courtC, ballC) end)
                 scriptData.Enabled = true
             end)
 
             offBtn.MouseButton1Click:Connect(function()
                 if scriptData.Enabled then
-                    print("[DEBUG] Disabling Court/Ball Colour Changer")
                     pcall(function() scriptData.GlobalOff() end)
                     scriptData.Enabled = false
                 end
             end)
 
-        -- If it's a regular script with On/Off
         else
             local buttonRow = Instance.new("Frame")
             buttonRow.Size = UDim2.new(1, 0, 0, 40)
@@ -771,7 +727,7 @@ for _, scriptData in ipairs(scripts) do
             onBtn.Size = UDim2.new(0, 80, 1, 0)
             onBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
             onBtn.BorderSizePixel = 1
-            onBtn.BorderColor3 = Color3.fromRGB(0,0,0) -- black outline
+            onBtn.BorderColor3 = Color3.fromRGB(0,0,0)
             onBtn.Text = "On"
             onBtn.TextColor3 = Color3.fromRGB(255,255,255)
             onBtn.Font = Enum.Font.SourceSansBold
@@ -782,7 +738,7 @@ for _, scriptData in ipairs(scripts) do
             offBtn.Size = UDim2.new(0, 80, 1, 0)
             offBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
             offBtn.BorderSizePixel = 1
-            offBtn.BorderColor3 = Color3.fromRGB(0,0,0) -- black outline
+            offBtn.BorderColor3 = Color3.fromRGB(0,0,0)
             offBtn.Text = "Off"
             offBtn.TextColor3 = Color3.fromRGB(255,255,255)
             offBtn.Font = Enum.Font.SourceSansBold
@@ -791,7 +747,6 @@ for _, scriptData in ipairs(scripts) do
 
             onBtn.MouseButton1Click:Connect(function()
                 if not scriptData.Enabled then
-                    print("[DEBUG] Enabling " .. scriptData.Name)
                     pcall(function() scriptData.GlobalOn() end)
                     scriptData.Enabled = true
                 end
@@ -799,7 +754,6 @@ for _, scriptData in ipairs(scripts) do
 
             offBtn.MouseButton1Click:Connect(function()
                 if scriptData.Enabled then
-                    print("[DEBUG] Disabling " .. scriptData.Name)
                     pcall(function() scriptData.GlobalOff() end)
                     scriptData.Enabled = false
                 end
@@ -807,5 +761,3 @@ for _, scriptData in ipairs(scripts) do
         end
     end)
 end
-
-print("[DEBUG] GUI script finished loading.")

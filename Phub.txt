@@ -149,14 +149,17 @@ local excludedColors = {
 
 local function updateCourtPartColor(part)
     if part:IsA("BasePart") then
-        local currentColorName = part.BrickColor.Name
-        if not excludedColors[currentColorName] then
+        -- Store original color if not already stored
+        if not part:GetAttribute("OriginalCourtColor") then
+            part:SetAttribute("OriginalCourtColor", part.BrickColor.Name)
+        end
+        -- Check against the original color
+        if not excludedColors[part:GetAttribute("OriginalCourtColor")] then
             part.BrickColor = newCourtColor
-        else
-            -- Skipping court part with excluded color.
         end
     end
 end
+
 
 local function updateBallObject(object)
     local lowerName = object.Name:lower()
